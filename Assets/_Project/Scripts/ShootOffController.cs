@@ -74,7 +74,7 @@ public class ShootOffController : MonoBehaviour
     private void UpdateIndicator()
     {
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        var pos = RayIntersectionWithYZero(ray.origin, ray.direction);
+        var pos = MathHelper.RayIntersectionWithYZero(ray.origin, ray.direction);
 
             _currentDirection = pos - _ball.transform.position;
             _currentDirection = Vector3.ClampMagnitude(_currentDirection, _maxDragRange);
@@ -105,18 +105,5 @@ public class ShootOffController : MonoBehaviour
 
         Debug.DrawLine(_ball.transform.position, _ball.transform.position + (_currentDirection.normalized * Mathf.Lerp(1, 2, _currentForce / _maxShootOffForce)), Color.blue, 1);
         Level.Current.ShootOff(_currentDirection, _currentForce);
-    }
-
-
-    private Vector3 RayIntersectionWithYZero(Vector3 origin, Vector3 dir)
-    {
-        float denom = Vector3.Dot(Vector3.up, dir);
-        if (Mathf.Abs(denom) > 0.0001f)
-        {
-            // negate normal instead of rayOrigin
-            float t = Vector3.Dot(origin, Vector3.up * -1) / denom;
-            return origin + dir * t;
-        }
-        return Vector3.zero;
-    }
+    }    
 }

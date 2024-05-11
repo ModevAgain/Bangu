@@ -197,7 +197,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4162513973976430845, guid: 3e1ef44511f459d4a96bee26660cf552, type: 3}
       propertyPath: m_Name
-      value: BaseObstacle_Wall Variant
+      value: BaseObstacle_Wall Variant 2
       objectReference: {fileID: 0}
     - target: {fileID: 4162513973976430845, guid: 3e1ef44511f459d4a96bee26660cf552, type: 3}
       propertyPath: m_Layer
@@ -209,7 +209,7 @@ PrefabInstance:
       objectReference: {fileID: 4786497175409173618, guid: 3e1ef44511f459d4a96bee26660cf552, type: 3}
     - target: {fileID: 6118953901597902336, guid: 3e1ef44511f459d4a96bee26660cf552, type: 3}
       propertyPath: m_LocalScale.x
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6118953901597902336, guid: 3e1ef44511f459d4a96bee26660cf552, type: 3}
       propertyPath: m_LocalScale.y
@@ -217,7 +217,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6118953901597902336, guid: 3e1ef44511f459d4a96bee26660cf552, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6118953901597902336, guid: 3e1ef44511f459d4a96bee26660cf552, type: 3}
       propertyPath: m_LocalPosition.y
@@ -297,16 +297,7 @@ MonoBehaviour:
       Data: false
     - Name: 
       Entry: 5
-      Data: true
-    - Name: 
-      Entry: 5
       Data: false
-    - Name: 
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 5
-      Data: true
     - Name: 
       Entry: 5
       Data: false
@@ -316,6 +307,15 @@ MonoBehaviour:
     - Name: 
       Entry: 5
       Data: true
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
     - Name: 
       Entry: 5
       Data: false

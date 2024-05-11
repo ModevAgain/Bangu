@@ -24,12 +24,14 @@ public class LevelBuilder : MonoBehaviour
     private BaseWall[,] _wallGrid;
     private BaseFloor[,] _floorGrid;
     private BaseObstacle[,] _obstacleGrid;
-    private bool _initialized;
+    private bool[,] _blockingGrid;
 
-    private Transform[] _obstacleTransforms;
+    private bool _initialized;
+    
     private GameObject _tempGOToBuild;
     private BaseObstacle _tempObstacleToBuild;
-    private Transform _currentSelectedObstacleTransform;
+    private BaseObstacle _currentSelectedObstacle;
+    private bool _canBuildAtCurrentPosition;
 
     void Start()
     {
@@ -135,7 +137,7 @@ public class LevelBuilder : MonoBehaviour
                         wallName += "_S_";
                     }
 
-                    var pos = new Vector3((x + 1) * BaseTileSize, 0.1f, -(y + 1) * BaseTileSize);
+                    var pos = new Vector3((x + 1) * BaseTileSize, 0.1f * BaseTileSize/2, -(y + 1) * BaseTileSize);
                     
                     
                     _wallGrid[x, y] = CreateWall(x, y, wallName, tempRoot.transform, pos, wallRot, wallDir, type, wallName);
@@ -168,6 +170,15 @@ public class LevelBuilder : MonoBehaviour
                 var baseObstacle = obstacleObj.GetComponent<BaseObstacle>();                
                 baseObstacle.InitObstacle(x, y);
                 _obstacleGrid[x, y] = baseObstacle;
+            }
+        }
+        _blockingGrid = new bool[_obstacleGrid.GetLength(0) + 2, _obstacleGrid.GetLength(0) + 2]; // +2 since we also want the borders to be included
+        for (int x = 0; x < _blockingGrid.GetLength(0); x++)
+        {
+            for (int y = 0; y < _blockingGrid.GetLength(0); y++)
+            {
+                if (x == 0 || y == 0 || x == _blockingGrid.GetLength(0) - 1 || y == _blockingGrid.GetLength(1) - 1)
+                    _blockingGrid[x, y] = true;
             }
         }
         #endregion
@@ -216,43 +227,70 @@ public class LevelBuilder : MonoBehaviour
         scale.x *= BaseTileSize / 2;
         scale.z *= BaseTileSize / 2;
         _tempGOToBuild.transform.localScale = scale;
-
-        _obstacleTransforms = _obstacleGrid.Cast<BaseObstacle>().Select(o => o.transform).ToArray();
+        
         _tempObstacleToBuild = obstacle;
     }
 
     public void UpdateObstacleBuildingMode(Vector3 position)
     {
-        _currentSelectedObstacleTransform = position.GetClosestTransform(_obstacleTransforms);
-        _tempGOToBuild.transform.position = _currentSelectedObstacleTransform.position;
-        _tempGOToBuild.transform.position += Vector3.one * _tempObstacleToBuild.Origin.position.y;
-        _tempGOToBuild.GetComponentInChildren<MeshRenderer>().material = CheckifCanBuildObstacle() ? Mat_ObstacleCanBuild : Mat_ObstacleCannotBuild;
+        _currentSelectedObstacle = position.GetClosestTransform(_obstacleGrid.Cast<BaseObstacle>().ToArray());
+        _tempGOToBuild.transform.position = _currentSelectedObstacle.transform.position;
+        _tempGOToBuild.transform.position += (_tempObstacleToBuild.Origin.position * BaseTileSize/2);     
+        _canBuildAtCurrentPosition = CheckifCanBuildObstacle();
+        _tempGOToBuild.GetComponentInChildren<MeshRenderer>().material = _canBuildAtCurrentPosition ? Mat_ObstacleCanBuild : Mat_ObstacleCannotBuild;
     }
 
     public void FinishObstacleBuildingMode(bool tryBuild)
     {
         //IF CAN BUILD        
-        if (tryBuild)
+        if (tryBuild && _canBuildAtCurrentPosition)
         {
-            var targetOb = _obstacleGrid.Cast<BaseObstacle>().Where(o => o.transform == _currentSelectedObstacleTransform).FirstOrDefault();
+            var targetOb = _obstacleGrid.Cast<BaseObstacle>().Where(o => o == _currentSelectedObstacle).FirstOrDefault();
             var newOb = Instantiate(_tempObstacleToBuild, LevelRoot.transform);
             newOb.transform.position = targetOb.transform.position;
+            newOb.Origin.localPosition *= BaseTileSize / 2;
             var scale = newOb.Origin.localScale;
             scale.x *= BaseTileSize / 2;
             scale.z *= BaseTileSize / 2;
             newOb.Origin.localScale = scale;
             newOb.InitObstacle(targetOb.GridX, targetOb.GridY);
             _obstacleGrid[targetOb.GridX, targetOb.GridY] = newOb;
+            UpdateBlockingGrid(newOb);
         }
         
-        
-        Destroy(_tempGOToBuild.gameObject);
-        _currentSelectedObstacleTransform = null;        
+        if(_tempGOToBuild != null)
+            Destroy(_tempGOToBuild.gameObject);
+        _tempGOToBuild = null;
+        _currentSelectedObstacle = null;        
     }
 
     private bool CheckifCanBuildObstacle()
     {
+        var blocks = _tempObstacleToBuild.GetDimensionBlocks();
+        int xOffset = _currentSelectedObstacle.GridX;
+        int yOffset = _currentSelectedObstacle.GridY;
 
+        foreach (var block in blocks)
+        {
+            //+1 for the borders
+            int x = 1 + xOffset + block.Item1; 
+            int y = 1 + yOffset + block.Item2;
+
+            if (x < 0 || x >= _blockingGrid.GetLength(0))
+                return false;
+            else if (y < 0 || y >= _blockingGrid.GetLength(1))
+                return false;
+            else if (_blockingGrid[x, y])
+                return false;
+        }
         return true;
+    }
+
+    private void UpdateBlockingGrid(BaseObstacle obstacle)
+    {
+        foreach (var block in obstacle.GetDimensionBlocks())
+        {
+            _blockingGrid[1 + obstacle.GridX + block.Item1, 1 + obstacle.GridY + block.Item2] = true;
+        }
     }
 }

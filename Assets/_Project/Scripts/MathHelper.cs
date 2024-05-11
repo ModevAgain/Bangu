@@ -32,4 +32,22 @@ public static class MathHelper
 
         return bestTarget;
     }
+
+    public static BaseObstacle GetClosestTransform(this Vector3 position, BaseObstacle[] obstacles)
+    {
+        BaseObstacle bestTarget = null;
+        float closestDistanceSqr = Mathf.Infinity;
+        foreach (var potentialTarget in obstacles)
+        {
+            Vector3 directionToTarget = potentialTarget.transform.position - position;
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+            if (dSqrToTarget < closestDistanceSqr)
+            {
+                closestDistanceSqr = dSqrToTarget;
+                bestTarget = potentialTarget;
+            }
+        }
+
+        return bestTarget;
+    }
 }

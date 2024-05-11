@@ -5,6 +5,7 @@ public class UIBuildingOption : MonoBehaviour, IDragHandler, IBeginDragHandler, 
 {
     public BaseObstacle Building;
     private LevelBuilder _levelBuilder;
+    private bool _dragging;
 
     void Start()
     {
@@ -14,6 +15,7 @@ public class UIBuildingOption : MonoBehaviour, IDragHandler, IBeginDragHandler, 
     public void OnBeginDrag(PointerEventData eventData)
     {
         _levelBuilder.ActivateObstacleBuildingMode(Building);
+        _dragging = true;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -25,11 +27,22 @@ public class UIBuildingOption : MonoBehaviour, IDragHandler, IBeginDragHandler, 
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        _levelBuilder.FinishObstacleBuildingMode(true);
+        if (_dragging)
+        {
+            _levelBuilder.FinishObstacleBuildingMode(true);
+            _dragging = false;
+        }
     }
-    
-    
 
-    
+
+    private void Update()
+    {
+        if(_dragging && Input.GetMouseButtonDown(1))
+        {
+            _levelBuilder.FinishObstacleBuildingMode(false);
+            _dragging = false;
+        }
+    }
+
 
 }

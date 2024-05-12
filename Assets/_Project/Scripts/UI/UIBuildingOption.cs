@@ -22,7 +22,7 @@ public class UIBuildingOption : MonoBehaviour, IDragHandler, IBeginDragHandler, 
     {
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         var pos = MathHelper.RayIntersectionWithYZero(ray.origin, ray.direction);
-        _levelBuilder.UpdateObstacleBuildingMode(pos);
+        _levelBuilder.UpdateObstacleBuildingMode_Position(pos);
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -37,10 +37,17 @@ public class UIBuildingOption : MonoBehaviour, IDragHandler, IBeginDragHandler, 
 
     private void Update()
     {
-        if(_dragging && Input.GetMouseButtonDown(1))
+        if(_dragging)
         {
-            _levelBuilder.FinishObstacleBuildingMode(false);
-            _dragging = false;
+            if (Input.GetMouseButtonDown(1))
+            {
+                _levelBuilder.FinishObstacleBuildingMode(false);
+                _dragging = false;
+            }
+            else if (Input.GetKeyDown(KeyCode.R))
+            {
+                _levelBuilder.UpdateObstacleBuildingMode_Rotate();
+            }
         }
     }
 

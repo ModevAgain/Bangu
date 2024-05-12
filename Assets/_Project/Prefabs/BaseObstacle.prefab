@@ -115,13 +115,58 @@ MonoBehaviour:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes: []
+    SerializationNodes:
+    - Name: DimensionMatrix
+      Entry: 7
+      Data: 0|System.Boolean[,], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 9
+    - Name: ranks
+      Entry: 1
+      Data: 3|3
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   Visual: {fileID: 7335411389123799604}
   Physical: {fileID: 4923315096555743178}
   Origin: {fileID: 6118953901597902336}
   GridX: 0
   GridY: 0
   NamePrefix: BaseObstacle
+  USE_DIMENSION: 0
+  DimensionSize: 3
+  CurrentPivotOffset: {x: -1, y: -1}
 --- !u!1 &7539471233780712692
 GameObject:
   m_ObjectHideFlags: 0

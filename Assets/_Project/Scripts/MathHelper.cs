@@ -50,4 +50,45 @@ public static class MathHelper
 
         return bestTarget;
     }
+
+    public static bool[,] RotateBitMatrixByKTimes(bool[,] matrix, int numberOftimes)
+    {
+        int n = matrix.GetLength(0);
+        bool[,] outputMatrix = new bool[n,n];
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                outputMatrix[i, j] = matrix[i, j];
+            }
+        }
+
+        for (int k = 0; k < numberOftimes; k++)
+        {
+            for (int i = 0; i < n / 2; i++)
+            {
+                for (int j = i; j < n - i - 1; j++)
+                {
+                    bool top = outputMatrix[i, j];
+                    //Move left to top
+                    outputMatrix[i, j] = outputMatrix[n - 1 - j, i];
+                    //Move bottom to left
+                    outputMatrix[n - 1 - j, i] = outputMatrix[n - i - 1, n - 1 - j];
+                    //Move right to bottom
+                    outputMatrix[n - i - 1, n - 1 - j] = outputMatrix[j, n - i - 1];
+                    //Move top to right
+                    outputMatrix[j, n - i - 1] = top;
+                }
+            }
+        }
+
+        //Check for center flag
+        var centerIndex = (n - 1) / 2;
+        if(centerIndex % 1 == 0)
+        {
+            outputMatrix[centerIndex, centerIndex] = matrix[centerIndex, centerIndex];
+        }
+
+        return outputMatrix;
+    }
 }

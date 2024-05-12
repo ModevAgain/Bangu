@@ -331,5 +331,19 @@ MonoBehaviour:
   GridX: 0
   GridY: 0
   NamePrefix: WallObstacle_
+  USE_DIMENSION: 1
+  LOG_DIMENSION_ROTATION: 1
   DimensionSize: 3
   CurrentPivotOffset: {x: -1, y: -1}
+  _dimensionBlocks_0:
+  - X: 0
+    Y: 0
+  _dimensionBlocks_90:
+  - X: 0
+    Y: 0
+  _dimensionBlocks_180:
+  - X: 0
+    Y: 0
+  _dimensionBlocks_270:
+  - X: 0
+    Y: 0

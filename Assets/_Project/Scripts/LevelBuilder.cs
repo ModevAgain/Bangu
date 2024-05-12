@@ -2,8 +2,10 @@ using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
+using Sirenix.Utilities;
+using Sirenix.OdinInspector;
 
-public class LevelBuilder : MonoBehaviour
+public class LevelBuilder : SerializedMonoBehaviour
 {
     public int BaseGridSize;
     public float BaseTileSize;
@@ -23,15 +25,18 @@ public class LevelBuilder : MonoBehaviour
 
     private BaseWall[,] _wallGrid;
     private BaseFloor[,] _floorGrid;
-    private BaseObstacle[,] _obstacleGrid;
+    private BaseObstacle[,] _obstacleGrid;    
+    [SerializeField, FoldoutGroup("Grid"), TableMatrix(DrawElementMethod = "DrawCell", RespectIndentLevel = true, ResizableColumns = false, SquareCells = true, IsReadOnly = true)]
     private bool[,] _blockingGrid;
 
     private bool _initialized;
     
+    //Obstacle Building
     private GameObject _tempGOToBuild;
     private BaseObstacle _tempObstacleToBuild;
     private BaseObstacle _currentSelectedObstacle;
     private bool _canBuildAtCurrentPosition;
+    private int _currentRotationToBuild;
 
     void Start()
     {
@@ -222,23 +227,43 @@ public class LevelBuilder : MonoBehaviour
 
     public void ActivateObstacleBuildingMode(BaseObstacle obstacle)
     {
-        _tempGOToBuild = Instantiate(obstacle.Visual.gameObject);
+        _tempGOToBuild = Instantiate(obstacle.gameObject);
+        Destroy(_tempGOToBuild.GetComponent<BaseObstacle>());
+        foreach (var col in _tempGOToBuild.GetComponentsInChildren<Collider>())
+        {
+            col.gameObject.SetActive(false);
+        } 
         var scale = obstacle.Origin.localScale;
         scale.x *= BaseTileSize / 2;
         scale.z *= BaseTileSize / 2;
-        _tempGOToBuild.transform.localScale = scale;
-        
+        _tempGOToBuild.transform.GetChild(0).localScale = scale;
+        _tempGOToBuild.transform.GetChild(0).localPosition *= BaseTileSize / 2;
+
+        _currentRotationToBuild = 0;
+        obstacle.InitData();
         _tempObstacleToBuild = obstacle;
+
     }
 
-    public void UpdateObstacleBuildingMode(Vector3 position)
+    public void UpdateObstacleBuildingMode_Position(Vector3 position)
     {
         _currentSelectedObstacle = position.GetClosestTransform(_obstacleGrid.Cast<BaseObstacle>().ToArray());
         _tempGOToBuild.transform.position = _currentSelectedObstacle.transform.position;
-        _tempGOToBuild.transform.position += (_tempObstacleToBuild.Origin.position * BaseTileSize/2);     
+        //_tempGOToBuild.transform.position += (_tempObstacleToBuild.Origin.position * BaseTileSize/2);     
         _canBuildAtCurrentPosition = CheckifCanBuildObstacle();
         _tempGOToBuild.GetComponentInChildren<MeshRenderer>().material = _canBuildAtCurrentPosition ? Mat_ObstacleCanBuild : Mat_ObstacleCannotBuild;
     }
+
+    public void UpdateObstacleBuildingMode_Rotate()
+    {
+        _currentRotationToBuild += 90;
+        if (_currentRotationToBuild == 360)
+            _currentRotationToBuild = 0;
+        _tempGOToBuild.transform.localRotation = Quaternion.Euler(0, _currentRotationToBuild, 0);
+        _canBuildAtCurrentPosition = CheckifCanBuildObstacle();
+        _tempGOToBuild.GetComponentInChildren<MeshRenderer>().material = _canBuildAtCurrentPosition ? Mat_ObstacleCanBuild : Mat_ObstacleCannotBuild;
+    }
+    
 
     public void FinishObstacleBuildingMode(bool tryBuild)
     {
@@ -249,6 +274,7 @@ public class LevelBuilder : MonoBehaviour
             var newOb = Instantiate(_tempObstacleToBuild, LevelRoot.transform);
             newOb.transform.position = targetOb.transform.position;
             newOb.Origin.localPosition *= BaseTileSize / 2;
+            newOb.transform.localRotation = Quaternion.Euler(0, _currentRotationToBuild, 0);
             var scale = newOb.Origin.localScale;
             scale.x *= BaseTileSize / 2;
             scale.z *= BaseTileSize / 2;
@@ -266,15 +292,15 @@ public class LevelBuilder : MonoBehaviour
 
     private bool CheckifCanBuildObstacle()
     {
-        var blocks = _tempObstacleToBuild.GetDimensionBlocks();
+        var blocks = _tempObstacleToBuild.GetDimensionBlocks(_currentRotationToBuild);
         int xOffset = _currentSelectedObstacle.GridX;
         int yOffset = _currentSelectedObstacle.GridY;
 
         foreach (var block in blocks)
         {
             //+1 for the borders
-            int x = 1 + xOffset + block.Item1; 
-            int y = 1 + yOffset + block.Item2;
+            int x = 1 + xOffset + block.X; 
+            int y = 1 + yOffset + block.Y;
 
             if (x < 0 || x >= _blockingGrid.GetLength(0))
                 return false;
@@ -288,9 +314,24 @@ public class LevelBuilder : MonoBehaviour
 
     private void UpdateBlockingGrid(BaseObstacle obstacle)
     {
-        foreach (var block in obstacle.GetDimensionBlocks())
+        foreach (var block in obstacle.GetDimensionBlocks(_currentRotationToBuild))
         {
-            _blockingGrid[1 + obstacle.GridX + block.Item1, 1 + obstacle.GridY + block.Item2] = true;
+            _blockingGrid[1 + obstacle.GridX + block.X, 1 + obstacle.GridY + block.Y] = true;
         }
     }
+
+#if UNITY_EDITOR
+    private static bool DrawCell(Rect rect, bool value)
+    {
+        if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
+        {
+            value = !value;
+            GUI.changed = true;
+            Event.current.Use();
+        }
+
+        UnityEditor.EditorGUI.DrawRect(rect.Padding(1), value ? new Color(0.1f, 0.8f, 0.2f) : new Color(0, 0, 0, 0.5f));
+        return value;
+    }
+#endif
 }
